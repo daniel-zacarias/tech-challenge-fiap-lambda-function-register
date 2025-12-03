@@ -46,7 +46,7 @@ jobs:
           aws lambda update-function-code \
             --function-name "$FUNCTION_NAME" \
             --zip-file fileb://"$ZIP_FILE" \
-            --region us-east-1
+            --region us-east-2
 
       - name: Wait for update to complete
         run: |
