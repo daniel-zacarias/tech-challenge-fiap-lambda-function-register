@@ -35,11 +35,7 @@ jobs:
       - name: Deploy to Lambda
         run: |
           FUNCTION_NAME="${{ secrets.LAMBDA_FUNCTION_NAME }}"
-          ZIP_FILE="target/quarkus-app/quarkus-run.jar"
-          
-          if [ ! -f "$ZIP_FILE" ]; then
-            ZIP_FILE=$(find target -name "*.jar" -type f | head -1)
-          fi
+          ZIP_FILE="target/function.zip"
           
           echo "Deploying $ZIP_FILE to function $FUNCTION_NAME"
           
