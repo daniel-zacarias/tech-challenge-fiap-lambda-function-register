@@ -26,6 +26,7 @@ public class FeedbackHandler implements RequestHandler<APIGatewayV2HTTPEvent, Fe
         }
         String body = event.getBody();
         ObjectMapper mapper = new ObjectMapper();
+        context.getLogger().log("Received body: " + body);
         FeedbackRequest request = mapper.convertValue(body, FeedbackRequest.class);
 
         String id = UUID.randomUUID().toString();
