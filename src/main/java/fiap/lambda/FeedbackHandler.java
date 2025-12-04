@@ -2,13 +2,10 @@ package fiap.lambda;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fiap.dto.FeedbackRequest;
 import fiap.dto.FeedbackResponse;
-import fiap.sns.Message;
 import software.amazon.awssdk.services.sns.SnsClient;
-import software.amazon.awssdk.services.sns.model.PublishRequest;
 
 import java.time.Instant;
 import java.util.UUID;
