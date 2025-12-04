@@ -44,7 +44,7 @@ jobs:
             --function-name "$FUNCTION_NAME" \
             --zip-file fileb://"$ZIP_FILE" \
             --region us-east-2
-            --environment "Variables={SNS_TOPIC_ARN=$SNS_TOPIC_ARN}, DISABLE_SIGNAL_HANDLERS=true"
+            --environment "Variables={SNS_TOPIC_ARN=$SNS_TOPIC_ARN, DISABLE_SIGNAL_HANDLERS=true}"
 
       - name: Wait for update to complete
         run: |
