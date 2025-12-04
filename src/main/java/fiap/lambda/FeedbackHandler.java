@@ -8,12 +8,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fiap.dto.FeedbackRequest;
 import fiap.dto.FeedbackResponse;
+import software.amazon.awssdk.services.sns.SnsClient;
 
 import java.util.Map;
 import java.util.UUID;
 
 public class FeedbackHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     ObjectMapper mapper = new ObjectMapper();
+    SnsClient snsClient = SnsClient.builder().build();
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
@@ -23,10 +25,14 @@ public class FeedbackHandler implements RequestHandler<APIGatewayProxyRequestEve
             String id = UUID.randomUUID().toString();
             String receivedAt = java.time.Instant.now().toString();
             FeedbackResponse response = new FeedbackResponse("RECEIVED", id, req.descricao(), req.nota(), receivedAt);
+            String bodyResponse = mapper.writeValueAsString(response);
+            snsClient.publish(builder -> builder
+                    .topicArn(System.getenv("SNS_TOPIC_ARN"))
+                    .message(bodyResponse));
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
-                    .withBody(mapper.writeValueAsString(response))
+                    .withBody(bodyResponse)
                     .withHeaders(Map.of("Content-Type", "application/json"));
 
         } catch (Exception e) {
