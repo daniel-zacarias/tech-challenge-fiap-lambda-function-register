@@ -2,52 +2,38 @@ package fiap.lambda;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fiap.dto.FeedbackRequest;
 import fiap.dto.FeedbackResponse;
-import fiap.sns.Message;
-import software.amazon.awssdk.services.sns.SnsClient;
-import software.amazon.awssdk.services.sns.model.PublishRequest;
 
-import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
-public class FeedbackHandler implements RequestHandler<APIGatewayV2HTTPEvent, FeedbackResponse> {
-    SnsClient snsClient = SnsClient.builder().build();
+public class FeedbackHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public FeedbackResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
-        if (event == null) {
-            context.getLogger().log("Received null request");
-            FeedbackResponse r = new FeedbackResponse("ERROR", null, Instant.now().toString());
-            return r;
-        }
-        String body = event.getBody();
-        ObjectMapper mapper = new ObjectMapper();
-        context.getLogger().log("Received body: " + body);
-
-        String id = UUID.randomUUID().toString();
-        context.getLogger().log("Received feedback with ID: " + id);
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
         try {
-            FeedbackRequest request = mapper.readValue(body, FeedbackRequest.class);
-            Message message = new Message(id, request.descricao(), request.nota());
-            String json = new ObjectMapper().writeValueAsString(message);
+            FeedbackRequest req = mapper.readValue(event.getBody(), FeedbackRequest.class);
 
-            PublishRequest publishRequest = PublishRequest.builder()
-                    .topicArn(System.getenv("SNS_TOPIC_ARN"))
-                    .message(json)
-                    .build();
-            snsClient.publish(publishRequest);
+            String id = UUID.randomUUID().toString();
+            String receivedAt = java.time.Instant.now().toString();
+            FeedbackResponse response = new FeedbackResponse("RECEIVED", id, req.descricao(), req.nota(), receivedAt);
+
+            return new APIGatewayProxyResponseEvent()
+                    .withStatusCode(200)
+                    .withBody(mapper.writeValueAsString(response))
+                    .withHeaders(Map.of("Content-Type", "application/json"));
+
         } catch (Exception e) {
-            context.getLogger().log("Error publishing message to SNS: " + e.getMessage());
-            FeedbackResponse r = new FeedbackResponse("ERROR", null, Instant.now().toString());
-            return r;
+            return new APIGatewayProxyResponseEvent()
+                    .withStatusCode(400)
+                    .withBody("{\"error\":\"" + e.getMessage() + "\"}")
+                    .withHeaders(Map.of("Content-Type", "application/json"));
         }
-
-        FeedbackResponse response = new FeedbackResponse("RECEIVED", id, Instant.now().toString());
-
-        return response;
     }
 }
