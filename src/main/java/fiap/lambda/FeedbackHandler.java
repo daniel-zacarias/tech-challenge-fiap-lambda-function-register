@@ -27,11 +27,11 @@ public class FeedbackHandler implements RequestHandler<APIGatewayV2HTTPEvent, Fe
         String body = event.getBody();
         ObjectMapper mapper = new ObjectMapper();
         context.getLogger().log("Received body: " + body);
-        FeedbackRequest request = mapper.convertValue(body, FeedbackRequest.class);
 
         String id = UUID.randomUUID().toString();
         context.getLogger().log("Received feedback with ID: " + id);
         try {
+            FeedbackRequest request = mapper.readValue(body, FeedbackRequest.class);
             Message message = new Message(id, request.descricao(), request.nota());
             String json = new ObjectMapper().writeValueAsString(message);
 
