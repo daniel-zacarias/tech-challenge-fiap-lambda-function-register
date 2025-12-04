@@ -20,29 +20,24 @@ public class FeedbackHandler implements RequestHandler<FeedbackRequest, Feedback
     public FeedbackResponse handleRequest(FeedbackRequest request, Context context) {
         if (request == null) {
             context.getLogger().log("Received null request");
-            FeedbackResponse r = new FeedbackResponse("ERROR", null, Instant.now().toString());
+            FeedbackResponse r = new FeedbackResponse(
+                    "ERROR",
+                    null,
+                    "Request is null",
+                    0,
+                    Instant.now().toString());
             return r;
         }
 
         String id = UUID.randomUUID().toString();
         context.getLogger().log("Received feedback with ID: " + id);
-        try {
-            Message message = new Message(id, request.descricao(), request.nota());
-            String json = new ObjectMapper().writeValueAsString(message);
 
-            PublishRequest publishRequest = PublishRequest.builder()
-                    .topicArn(System.getenv("SNS_TOPIC_ARN"))
-                    .message(json)
-                    .build();
-
-            snsClient.publish(publishRequest);
-        } catch (Exception e) {
-            context.getLogger().log("Error publishing message to SNS: " + e.getMessage());
-            FeedbackResponse r = new FeedbackResponse("ERROR", null, Instant.now().toString());
-            return r;
-        }
-
-        FeedbackResponse response = new FeedbackResponse("RECEIVED", id, Instant.now().toString());
+        FeedbackResponse response = new FeedbackResponse(
+                "RECEIVED",
+                id,
+                request.descricao(),
+                request.nota(),
+                Instant.now().toString());
 
         return response;
     }
