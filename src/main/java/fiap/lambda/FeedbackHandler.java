@@ -10,6 +10,8 @@ import fiap.dto.FeedbackRequest;
 import fiap.dto.FeedbackResponse;
 import software.amazon.awssdk.services.sns.SnsClient;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,7 +25,9 @@ public class FeedbackHandler implements RequestHandler<APIGatewayProxyRequestEve
             FeedbackRequest req = mapper.readValue(event.getBody(), FeedbackRequest.class);
 
             String id = UUID.randomUUID().toString();
-            String receivedAt = java.time.Instant.now().toString();
+            String receivedAt = OffsetDateTime
+                    .now(ZoneId.of("America/Sao_Paulo"))
+                    .toString();
             FeedbackResponse response = new FeedbackResponse("RECEIVED", id, req.descricao(), req.nota(), receivedAt);
             String bodyResponse = mapper.writeValueAsString(response);
             snsClient.publish(builder -> builder
