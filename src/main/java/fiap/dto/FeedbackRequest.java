@@ -8,7 +8,7 @@ public record FeedbackRequest(
 
     public FeedbackRequest {
         if (nota < 1 || nota > 10) {
-            throw new IllegalArgumentException("Nota must be between 1 and 5");
+            throw new IllegalArgumentException("Nota must be between 1 and 10");
         }
     }
 }
