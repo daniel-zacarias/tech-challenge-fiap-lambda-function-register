@@ -33,6 +33,12 @@ public class FeedbackHandlerTest {
     @Mock
     private SnsClient snsClient;
 
+    @Mock
+    private Context context;
+
+    @Mock
+    private APIGatewayProxyRequestEvent event;
+
     private ObjectMapper mapper;
     private FeedbackHandler handler;
 
@@ -54,15 +60,14 @@ public class FeedbackHandlerTest {
                   "nota": 5
                 }
                 """;
-        APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
-        event.setBody(requestJson);
+        when(event.getBody()).thenReturn(requestJson);
 
         when(snsClient.publish(
                 ArgumentMatchers.<Consumer<PublishRequest.Builder>>any()))
                 .thenReturn(PublishResponse.builder().messageId("123").build());
 
         // when
-        APIGatewayProxyResponseEvent response = handler.handleRequest(event, mock(Context.class));
+        APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
 
         // then
         assertEquals(200, response.getStatusCode());
@@ -83,10 +88,14 @@ public class FeedbackHandlerTest {
 
     @Test
     void shouldReturn400WhenInvalidJson() {
-        APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
-        event.setBody("{ invalid json ");
+        String requestJson = """
+                {
+                  "invalid json"
+                }
+                """;
+        when(event.getBody()).thenReturn(requestJson);
 
-        APIGatewayProxyResponseEvent response = handler.handleRequest(event, mock(Context.class));
+        APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
 
         assertEquals(400, response.getStatusCode());
         assertTrue(response.getBody().contains("error"));
