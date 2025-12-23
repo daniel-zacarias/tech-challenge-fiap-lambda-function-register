@@ -16,8 +16,17 @@ import java.util.Map;
 import java.util.UUID;
 
 public class FeedbackHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    ObjectMapper mapper = new ObjectMapper();
-    SnsClient snsClient = SnsClient.builder().build();
+    ObjectMapper mapper;
+    SnsClient snsClient;
+
+    public FeedbackHandler() {
+        this(new ObjectMapper(), SnsClient.builder().build());
+    }
+
+    public FeedbackHandler(ObjectMapper mapper, SnsClient snsClient) {
+        this.mapper = mapper;
+        this.snsClient = snsClient;
+    }
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {

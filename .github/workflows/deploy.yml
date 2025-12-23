@@ -23,7 +23,7 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn clean package -DskipTests
+        run: mvn clean package
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
